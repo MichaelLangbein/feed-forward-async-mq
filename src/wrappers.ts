@@ -1,6 +1,7 @@
 import { Wps, Database, MessageBus, KvPair, WpsOptionInput } from './infra';
 import { Post, getProvidedProductNames, getParaFromPost } from './post';
 import { listExcept, permutations } from './utils';
+import hash from 'object-hash';
 
 
 export class Wrapper {
@@ -11,6 +12,16 @@ export class Wrapper {
 
     protected init() {
         this.mb.read<Post>('posts').subscribe(async post => {
+
+            const cacheKey = hash(post.data);
+            const cachedResponses = this.db.get(cacheKey);
+            if (cachedResponses) {
+                for (const cachedResponse of cachedResponses) {
+                    this.mb.write('posts', { processId: post.processId, data: cachedResponse });
+                }
+            }
+
+            const responses: typeof post.data[] = [];
             for (const parameterCombination of this.validParameterCombinations(post)) {
                 const products = await this.wps.execute(parameterCombination);
                 const newPost = {...post};
@@ -19,7 +30,10 @@ export class Wrapper {
                     newPost.data[this.name][product.name] = product.value;
                 }
                 this.mb.write('posts', newPost);
+                responses.push(newPost.data);
             }
+
+            this.db.set(cacheKey, responses);
         });
     }
 

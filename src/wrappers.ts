@@ -46,7 +46,6 @@ export class Wrapper {
         const givenInputs    = getProvidedProductNames(post);
         const missingInputs  = listExcept(requiredInputs, givenInputs);
         if (missingInputs.length > 0) return [];
-        // @TODO: or look up if the missing inputs have already been provided in the past?
         
         // if the post doesn't contain a config-parameter of this service, run with all possible values of that config-parameter.
         const configurableInputs                    = this.getConfigurableInputNames();

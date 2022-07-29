@@ -92,3 +92,38 @@ export class Shakyground implements Wps {
         }];
     }
 }
+
+
+export class Ab implements Wps {
+    inputs: WpsInput[] = [{
+        name: 'Letter',
+        options: ['A', 'B']
+    }];
+
+    async execute(args: KvPair[]): Promise<KvPair[]> {
+        sleep(Math.random() * 1000);
+        const letter = args.find(a => a.name === 'Letter');
+        // console.log(`Ab returning ${letter?.value}...`)
+        return [{
+            name: 'LetterOutput',
+            value: letter?.value + '_output'
+        }];
+    }
+}
+
+export class OneTwo implements Wps {
+    inputs: WpsInput[] = [{
+        name: 'Number',
+        options: ['1', '2']
+    }];
+
+    async execute(args: KvPair[]): Promise<KvPair[]> {
+        sleep(Math.random() * 1000);
+        const number = args.find(a => a.name === 'Number');
+        // console.log(`12 returning ${number?.value}...`)
+        return [{
+            name: 'NumberOutput',
+            value: number?.value + '_output'
+        }];
+    }
+}

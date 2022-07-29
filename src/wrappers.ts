@@ -12,14 +12,13 @@ export class Wrapper {
 
     protected init() {
         this.mb.subscribe('posts', async post => {
-
             const parameterCombinations = this.validParameterCombinations(post);
             for (const parameterCombination of parameterCombinations) {
 
                 // querying cache
                 const cacheKey = hash(parameterCombination);
                 const cachedResponse = this.db.get(cacheKey);
-                if (cachedResponse === "running") { 
+                if (cachedResponse === "running") {
                     // lock that prevents two identical requests, fired very close to each other, to start the process twice
                     setTimeout(() => this.mb.write('posts', post), 1000);  // putting request back in queue so we don't loose any branches
                     continue;
@@ -29,7 +28,7 @@ export class Wrapper {
                         processId: post.processId,
                         stepNumber: post.stepNumber + 1,
                         lastProcessor: this.name,
-                        data: post.data
+                        data: {... post.data}
                     };
                     newPost.data[this.name] = cachedResponse;
                     this.mb.write('posts', newPost);
@@ -45,7 +44,7 @@ export class Wrapper {
                     processId: post.processId,
                     stepNumber: post.stepNumber + 1,
                     lastProcessor: this.name,
-                    data: post.data
+                    data: {...  post.data}
                 };
                 for (const product of products) {
                     if (!newPost.data[this.name]) newPost.data[this.name] = {};

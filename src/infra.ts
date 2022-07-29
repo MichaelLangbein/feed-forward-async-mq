@@ -11,8 +11,7 @@ export class MessageBus {
     public write<T>(channel: string, message: T) {
         if (!this.channels[channel]) this.channels[channel] = [];
         for (const subscription of this.channels[channel]) {
-            // do on next loop, to prevent nesting-overflow
-            setTimeout(() => subscription(message), 0);
+            subscription(message);
         }
     }
 

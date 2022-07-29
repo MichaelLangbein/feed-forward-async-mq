@@ -1,15 +1,48 @@
 import { MessageBus, Database } from './infra';
 import { Post } from './post';
-import { Modelprop, Shakyground, Assetmaster, Deus } from './services';
-import { ModelpropWrapper, ShakygroundWrapper, AssetMasterWrapper, DeusWrapper } from './wrappers';
+import { Modelprop, Shakyground, Assetmaster, Deus, Ab, OneTwo } from './services';
+import { ModelpropWrapper, ShakygroundWrapper, AssetMasterWrapper, DeusWrapper, Wrapper } from './wrappers';
 
 
 
 
+test('check that all possible parameter combinations are obtained', async () => {
 
 
+    const messageBus = new MessageBus();
+    const database = new Database();
 
-test('check that all possible parameter combinations are obtained exactly once', async () => {
+    const abWrapper = new Wrapper('ab', database, messageBus, new Ab());
+    const oneTwoWrapper = new Wrapper('12', database, messageBus, new OneTwo());
+
+    const userRequest: Post = {
+        processId: 1,
+        stepNumber: 0,
+        lastProcessor: 'user',
+        data: {
+            user: {
+                // Letter: 'A'
+            }
+        }
+    };
+    
+    
+    messageBus.write("posts", userRequest);
+
+    const outputs = await new Promise<any[]>(resolve => {
+        const outputs: any[] = [];
+        messageBus.subscribe("posts", async (post: Post) => {
+            outputs.push(post);
+            if (outputs.length === 4) resolve(outputs);
+        })
+    });
+
+
+    expect(outputs.length).toBe(4);
+});
+
+
+test('check that deus runs all possible para-combos', async () => {
 
 
     const messageBus = new MessageBus();

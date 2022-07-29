@@ -20,6 +20,7 @@ export class Wrapper {
                 const cachedResponse = this.db.get(cacheKey);
                 if (cachedResponse) {
                         this.mb.write('posts', { processId: post.processId, data: cachedResponse });
+                        return;
                 }
 
                 // running wps
@@ -29,6 +30,7 @@ export class Wrapper {
                     if (!newPost.data[this.name]) newPost.data[this.name] = {};
                     newPost.data[this.name][product.name] = product.value;
                 }
+                // writing to queue
                 this.mb.write('posts', newPost);
 
 

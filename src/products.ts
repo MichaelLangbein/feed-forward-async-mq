@@ -1,10 +1,10 @@
-export const saraSchema = {
-    type: 'schema',
+export const saraVulnerability = {
+    type: 'vulnerability',
     name: 'SARA_v1.0'
 }
 
-export const suppasriSchema = {
-    type: 'schema',
+export const suppasriVulnerability = {
+    type: 'vulnerability',
     name: 'Suppasri'
 }
 

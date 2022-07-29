@@ -32,5 +32,10 @@ messageBus.read("posts").subscribe((data) => {
 
 setTimeout(() => {
   // @ts-ignore
-  console.log(database.data)
+  for (const entry in database.data) {
+    const data = database.get(entry);
+    console.log(data.assetmaster.exposure)
+    console.log(data.modelprop.vulnerability)
+    console.log(data.deus.eqDamage)
+  }
 }, 3000)

@@ -1,6 +1,6 @@
 import { sleep } from './utils';
 import { Wps, WpsInput, KvPair } from './infra';
-import { peruCvt1, peruCvt2, peruCvt3, saraSchema, suppasriSchema } from './products';
+import { peruCvt1, peruCvt2, peruCvt3, saraVulnerability, suppasriVulnerability } from './products';
 
 
 export class Deus implements Wps {
@@ -58,9 +58,9 @@ export class Modelprop implements Wps {
         const schema = args.find(a => a.name === 'schema');
         switch (schema?.value) {
             case 'SARA_v1.0':
-                return [{ name: 'vulnerability', value: saraSchema }];
+                return [{ name: 'vulnerability', value: saraVulnerability }];
             case 'Suppasri':
-                return [{ name: 'vulnerability', value: suppasriSchema }];
+                return [{ name: 'vulnerability', value: suppasriVulnerability }];
             default:
                 throw new Error(`No such schema: ${schema?.value}`);
         }

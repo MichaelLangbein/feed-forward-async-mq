@@ -1,19 +1,23 @@
-import { BehaviorSubject, filter, Observable } from 'rxjs';
 import { sleep } from './utils';
 
+
+export type Subscription = (data: any) => void;
+
 export class MessageBus {
-    private channels: {[channel: string]: BehaviorSubject<any>} = {};
+    private channels: {[channel: string]: Subscription[]} = {};
 
     constructor() {}
 
     public write<T>(channel: string, message: T) {
-        if (!this.channels[channel]) this.channels[channel] = new BehaviorSubject(message);
-        else this.channels[channel].next(message);
+        if (!this.channels[channel]) this.channels[channel] = [];
+        for (const subscription of this.channels[channel]) {
+            subscription(message);
+        }
     }
 
-    public read<T>(channel: string): Observable<T> {
-        if (!this.channels[channel]) this.channels[channel] = new BehaviorSubject<any>(null);
-        return this.channels[channel].pipe(filter(m => m !== null));
+    public subscribe(channel: string, subscription: Subscription): void {
+        if (!this.channels[channel]) this.channels[channel] = [];
+        this.channels[channel].push(subscription);
     }
 }
 

@@ -1,24 +1,9 @@
-export const saraVulnerability = {
-    type: 'vulnerability',
-    name: 'SARA_v1.0'
-}
+export const saraVulnerability = 'vulnerability_SARA';
 
-export const suppasriVulnerability = {
-    type: 'vulnerability',
-    name: 'Suppasri'
-}
+export const suppasriVulnerability = 'vulnerability_Suppasri';
 
-export const peruCvt1 = {
-    type: 'exposure',
-    name: 'peruCvt1'
-}
+export const peruCvt1 = 'exposure_peruCvt1';
 
-export const peruCvt2 = {
-    type: 'exposure',
-    name: 'peruCvt2'
-}
+export const peruCvt2 = 'exposure_peruCvt2';
 
-export const peruCvt3 = {
-    type: 'exposure',
-    name: 'peruCvt3'
-}
+export const peruCvt3 = 'exposure_peruCvt3';

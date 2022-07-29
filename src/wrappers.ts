@@ -11,7 +11,7 @@ export class Wrapper {
     }
 
     protected init() {
-        this.mb.read<Post>('posts').subscribe(async post => {
+        this.mb.subscribe('posts', async post => {
 
             const parameterCombinations = this.validParameterCombinations(post);
             for (const parameterCombination of parameterCombinations) {
@@ -19,12 +19,13 @@ export class Wrapper {
                 // querying cache
                 const cacheKey = hash(parameterCombination);
                 const cachedResponse = this.db.get(cacheKey);
-                if (cachedResponse === "running") { // lock that prevents two identical requests, fired very close to each other, to start the process twice
+                if (cachedResponse === "running") { 
+                    // lock that prevents two identical requests, fired very close to each other, to start the process twice
                     return;
                 }
                 if (cachedResponse) {
-                        this.mb.write('posts', { processId: post.processId, data: cachedResponse });
-                        return;
+                    this.mb.write('posts', { processId: post.processId, data: cachedResponse });
+                    return;
                 }
                 
                 // lock that prevents two identical requests, fired very close to each other, to start the process twice
@@ -49,8 +50,14 @@ export class Wrapper {
     }
 
     protected validParameterCombinations(post: Post): KvPair[][] {
+
         // if the post already contains outputs from this service, return []
         if (post.data[this.name]) return [];
+
+        
+        if (this.name === 'deus') {
+            debugger;
+        }
         
         // if the post doesn't contain a required input, return []
         const requiredInputs = this.getRequiredInputNames();
@@ -105,11 +112,7 @@ export class ShakygroundWrapper extends Wrapper {}
 
 export class AssetMasterWrapper extends Wrapper {}
 
-export class DeusWrapper extends Wrapper {
-    protected init() {
-        super.init();
-    }
-}
+export class DeusWrapper extends Wrapper {}
 
 
 

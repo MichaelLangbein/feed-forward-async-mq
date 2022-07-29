@@ -26,7 +26,7 @@ const userRequest: Post = {
 }
 // @TODO: if the user requests contains options, split them into single-value-posts
 messageBus.write("posts", userRequest);
-// messageBus.read("posts").subscribe((data) => {
+// messageBus.subscribe("posts", (data) => {
 //   console.log('reading from `posts`: ', data);
 // })
 

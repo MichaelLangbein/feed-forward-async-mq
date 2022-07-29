@@ -17,10 +17,10 @@ export class Deus implements Wps {
         const shakemap = args.find(a => a.name === 'shakemap');
         const vulnerability = args.find(a => a.name === 'vulnerability');
         const exposure = args.find(a => a.name === 'exposure');
-        console.log(`deus returns eqDamage_${shakemap?.value}_${vulnerability?.value.name}_${exposure?.value.name}`);
+        console.log(`... deus returns eqDamage_${shakemap?.value}_${vulnerability?.value}_${exposure?.value}`);
         return [{
             name: 'eqDamage',
-            value: `eqDamage_${shakemap?.value}_${vulnerability?.value.name}_${exposure?.value.name}`
+            value: `eqDamage_${shakemap?.value}_${vulnerability?.value}_${exposure?.value}`
         }];
     }
 
@@ -37,13 +37,13 @@ export class Assetmaster implements Wps {
         const model = args.find(a => a.name === 'model');
         switch (model?.value) {
             case 'Peru-CVT1':
-                console.log(`assetmaster returns ${peruCvt1.name}`)
+                console.log(`assetmaster returns ${peruCvt1}`)
                 return [{ name: 'exposure', value: peruCvt1 }];
             case 'Peru-CVT2':
-                console.log(`assetmaster returns ${peruCvt2.name}`)
+                console.log(`assetmaster returns ${peruCvt2}`)
                 return [{ name: 'exposure', value: peruCvt2 }];
             case 'Peru-CVT3':
-                console.log(`assetmaster returns ${peruCvt3.name}`)
+                console.log(`assetmaster returns ${peruCvt3}`)
                 return [{ name: 'exposure', value: peruCvt3 }];
             default:
                 throw new Error(`No such model: ${model?.value}`);
@@ -62,10 +62,10 @@ export class Modelprop implements Wps {
         const schema = args.find(a => a.name === 'schema');
         switch (schema?.value) {
             case 'SARA_v1.0':
-                console.log(`modelprop returns ${saraVulnerability.name}`)
+                console.log(`modelprop returns ${saraVulnerability}`)
                 return [{ name: 'vulnerability', value: saraVulnerability }];
             case 'Suppasri':
-                console.log(`modelprop returns ${suppasriVulnerability.name}`)
+                console.log(`modelprop returns ${suppasriVulnerability}`)
                 return [{ name: 'vulnerability', value: suppasriVulnerability }];
             default:
                 throw new Error(`No such schema: ${schema?.value}`);

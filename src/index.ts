@@ -45,7 +45,8 @@ const userRequest: Post = {
 // @TODO: if the user requests contains options, split them into single-value-posts
 messageBus.write("posts", userRequest);
 messageBus.subscribe("posts", async (post) => {
-  console.log(`reading from posts: stepNr ${post.stepNumber}, lastProcessor ${post.lastProcessor}`, post.data.deus?.eqDamage);
+  console.log(post.data.deus?.eqDamage);
+  // console.log(post.data['ab'], post.data['12'])
 })
 
 

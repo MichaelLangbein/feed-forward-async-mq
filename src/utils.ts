@@ -29,3 +29,37 @@ export function permutations<T>(data: T[][]): T[][] {
 
     return perms;
 }
+
+
+export class Queue<T> {
+    private data: (T | null)[];
+    private head = 0;
+    private tail = 0;
+
+    constructor(capacity: number) {
+        this.data = Array(capacity).fill(0).map(v => null);
+    }
+
+    public enqueue(val: T): boolean {
+        const location = this.tail;
+        if (!this.data[location]) {
+            this.data[location] = val;
+            this.tail = this.shiftUp(this.tail);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public dequeue() {
+        const location = this.head;
+        const data = this.data[location];
+        this.data[location] = null;
+        this.head = this.shiftUp(location);
+        return data;
+    }
+
+    private shiftUp(n: number) {
+        return (n + 1) % this.data.length;
+    }
+}

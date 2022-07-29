@@ -26,16 +26,7 @@ const userRequest: Post = {
 }
 // @TODO: if the user requests contains options, split them into single-value-posts
 messageBus.write("posts", userRequest);
-messageBus.read("posts").subscribe((data) => {
-  console.log('reading from `posts`: ', data);
-})
+// messageBus.read("posts").subscribe((data) => {
+//   console.log('reading from `posts`: ', data);
+// })
 
-setTimeout(() => {
-  // @ts-ignore
-  for (const entry in database.data) {
-    const data = database.get(entry);
-    console.log(data.assetmaster.exposure)
-    console.log(data.modelprop.vulnerability)
-    console.log(data.deus.eqDamage)
-  }
-}, 3000)

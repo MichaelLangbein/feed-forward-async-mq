@@ -13,15 +13,22 @@ export class Wrapper {
     protected init() {
         this.mb.read<Post>('posts').subscribe(async post => {
 
-            for (const parameterCombination of this.validParameterCombinations(post)) {
+            const parameterCombinations = this.validParameterCombinations(post);
+            for (const parameterCombination of parameterCombinations) {
 
                 // querying cache
                 const cacheKey = hash(parameterCombination);
                 const cachedResponse = this.db.get(cacheKey);
+                if (cachedResponse === "running") { // lock that prevents two identical requests, fired very close to each other, to start the process twice
+                    return;
+                }
                 if (cachedResponse) {
                         this.mb.write('posts', { processId: post.processId, data: cachedResponse });
                         return;
                 }
+                
+                // lock that prevents two identical requests, fired very close to each other, to start the process twice
+                this.db.set(cacheKey, "running");  
 
                 // running wps
                 const products = await this.wps.execute(parameterCombination);
@@ -98,7 +105,11 @@ export class ShakygroundWrapper extends Wrapper {}
 
 export class AssetMasterWrapper extends Wrapper {}
 
-export class DeusWrapper extends Wrapper {}
+export class DeusWrapper extends Wrapper {
+    protected init() {
+        super.init();
+    }
+}
 
 
 

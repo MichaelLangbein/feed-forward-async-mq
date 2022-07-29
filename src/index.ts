@@ -1,6 +1,7 @@
 import { MessageBus, Database } from './infra';
 import { Post } from './post';
 import { Modelprop, Shakyground, Assetmaster, Deus } from './services';
+import { sleep } from './utils';
 import { ModelpropWrapper, ShakygroundWrapper, AssetMasterWrapper, DeusWrapper } from './wrappers';
 
 
@@ -17,6 +18,8 @@ const deusWrapper = new DeusWrapper('deus', database, messageBus, new Deus());
 
 const userRequest: Post = {
   processId: 42,
+  stepNumber: 0,
+  lastProcessor: 'user',
   data: {
     user: {
       eqParas: "magnitude8.5",
@@ -26,7 +29,7 @@ const userRequest: Post = {
 }
 // @TODO: if the user requests contains options, split them into single-value-posts
 messageBus.write("posts", userRequest);
-// messageBus.subscribe("posts", (data) => {
-//   console.log('reading from `posts`: ', data);
-// })
+messageBus.subscribe("posts", async (data) => {
+  console.log(`reading from posts: stepNr ${data.stepNumber}, lastProcessor ${data.lastProcessor}`);
+})
 

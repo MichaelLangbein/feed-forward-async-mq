@@ -3,6 +3,8 @@ import { KvPair } from './infra';
 
 export interface Post {
     processId: number,
+    stepNumber: number,
+    lastProcessor: string,
     data: {
         [providerName: string]: {
             [productName: string]: any | any[]

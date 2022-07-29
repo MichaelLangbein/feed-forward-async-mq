@@ -21,11 +21,18 @@ export class Wrapper {
                 const cachedResponse = this.db.get(cacheKey);
                 if (cachedResponse === "running") { 
                     // lock that prevents two identical requests, fired very close to each other, to start the process twice
-                    return;
+                    continue;
                 }
                 if (cachedResponse) {
-                    this.mb.write('posts', { processId: post.processId, data: cachedResponse });
-                    return;
+                    const newPost: Post = {
+                        processId: post.processId,
+                        stepNumber: post.stepNumber + 1,
+                        lastProcessor: this.name,
+                        data: post.data
+                    };
+                    newPost.data[this.name] = cachedResponse;
+                    this.mb.write('posts', newPost);
+                    continue;
                 }
                 
                 // lock that prevents two identical requests, fired very close to each other, to start the process twice
@@ -33,7 +40,12 @@ export class Wrapper {
 
                 // running wps
                 const products = await this.wps.execute(parameterCombination);
-                const newPost = {...post};
+                const newPost: Post = {
+                    processId: post.processId,
+                    stepNumber: post.stepNumber + 1,
+                    lastProcessor: this.name,
+                    data: post.data
+                };
                 for (const product of products) {
                     if (!newPost.data[this.name]) newPost.data[this.name] = {};
                     newPost.data[this.name][product.name] = product.value;
@@ -43,7 +55,7 @@ export class Wrapper {
 
 
                 // setting cache
-                this.db.set(cacheKey, newPost.data);
+                this.db.set(cacheKey, newPost.data[this.name]);
             }
 
         });
@@ -53,11 +65,6 @@ export class Wrapper {
 
         // if the post already contains outputs from this service, return []
         if (post.data[this.name]) return [];
-
-        
-        if (this.name === 'deus') {
-            debugger;
-        }
         
         // if the post doesn't contain a required input, return []
         const requiredInputs = this.getRequiredInputNames();

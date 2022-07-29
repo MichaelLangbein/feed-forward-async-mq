@@ -1,7 +1,7 @@
 import { sleep } from './utils';
 
 
-export type Subscription = (data: any) => void;
+export type Subscription = (data: any) => Promise<void>;
 
 export class MessageBus {
     private channels: {[channel: string]: Subscription[]} = {};
@@ -11,7 +11,8 @@ export class MessageBus {
     public write<T>(channel: string, message: T) {
         if (!this.channels[channel]) this.channels[channel] = [];
         for (const subscription of this.channels[channel]) {
-            subscription(message);
+            // do on next loop, to prevent nesting-overflow
+            setTimeout(() => subscription(message), 0);
         }
     }
 

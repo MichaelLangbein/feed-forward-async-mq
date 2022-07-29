@@ -13,16 +13,16 @@ export class Wrapper {
     protected init() {
         this.mb.read<Post>('posts').subscribe(async post => {
 
-            const cacheKey = hash(post.data);
-            const cachedResponses = this.db.get(cacheKey);
-            if (cachedResponses) {
-                for (const cachedResponse of cachedResponses) {
-                    this.mb.write('posts', { processId: post.processId, data: cachedResponse });
-                }
-            }
-
-            const responses: typeof post.data[] = [];
             for (const parameterCombination of this.validParameterCombinations(post)) {
+
+                // querying cache
+                const cacheKey = hash(parameterCombination);
+                const cachedResponse = this.db.get(cacheKey);
+                if (cachedResponse) {
+                        this.mb.write('posts', { processId: post.processId, data: cachedResponse });
+                }
+
+                // running wps
                 const products = await this.wps.execute(parameterCombination);
                 const newPost = {...post};
                 for (const product of products) {
@@ -30,10 +30,12 @@ export class Wrapper {
                     newPost.data[this.name][product.name] = product.value;
                 }
                 this.mb.write('posts', newPost);
-                responses.push(newPost.data);
+
+
+                // setting cache
+                this.db.set(cacheKey, newPost.data);
             }
 
-            this.db.set(cacheKey, responses);
         });
     }
 

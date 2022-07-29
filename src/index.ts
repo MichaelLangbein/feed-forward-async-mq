@@ -21,7 +21,6 @@ const userRequest: Post = {
     user: {
       eqParas: "magnitude8.5",
       gmpe: "gmpe1",
-      model: "Peru-CVT2",
     }
   }
 }
@@ -31,4 +30,7 @@ messageBus.read("posts").subscribe((data) => {
   console.log('reading from `posts`: ', data);
 })
 
-
+setTimeout(() => {
+  // @ts-ignore
+  console.log(database.data)
+}, 3000)

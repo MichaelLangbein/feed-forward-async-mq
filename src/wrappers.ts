@@ -21,6 +21,7 @@ export class Wrapper {
                 const cachedResponse = this.db.get(cacheKey);
                 if (cachedResponse === "running") { 
                     // lock that prevents two identical requests, fired very close to each other, to start the process twice
+                    setTimeout(() => this.mb.write('posts', post), 1000);  // putting request back in queue so we don't loose any branches
                     continue;
                 }
                 if (cachedResponse) {
@@ -36,7 +37,7 @@ export class Wrapper {
                 }
                 
                 // lock that prevents two identical requests, fired very close to each other, to start the process twice
-                this.db.set(cacheKey, "running");  
+                this.db.set(cacheKey, "running");
 
                 // running wps
                 const products = await this.wps.execute(parameterCombination);

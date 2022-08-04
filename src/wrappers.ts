@@ -7,6 +7,7 @@ import hash from 'object-hash';
 export class Wrapper {
 
     protected parameterComboQueue = new Queue<{post: Post, paraCombo: KvPair[]}>(30);
+    protected incompleteParameterCombos: {[processId: number]: KvPair[]} = {};
 
     constructor(protected name: string, protected db: Database, protected mb: MessageBus, protected wps: Wps) {
         this.init();
@@ -78,21 +79,40 @@ export class Wrapper {
 
     protected validParameterCombinations(post: Post): KvPair[][] {
 
-        // if the post already contains outputs from this service, return []
+        // 1: if the post already contains outputs from this service, return []
         if (post.data[this.name]) return [];
 
-        // if the post doesn't contain a required input, return []
-        const requiredInputs    = this.getRequiredInputNames();
-        const givenInputs       = getProvidedProductNames(post);
-        const missingInputs     = listExcept(requiredInputs, givenInputs);
-        if (missingInputs.length > 0) return [];
 
-        // if the post doesn't contain a config-parameter of this service, run with all possible values of that config-parameter.
+        const requiredInputs  = this.getRequiredInputNames();
+        let givenInputs       = getProvidedProductNames(post);
+        let missingInputs     = listExcept(requiredInputs, givenInputs);
+        let givenInputValues  = givenInputs.map(pName => getParaFromPost(pName, post));
+        
+        // 2: if the post doesn't contain a required input ...
+        if (missingInputs.length > 0) {
+            // 2.1: ... see if you can fill the missing inputs from past `incompleteParameterCombos` ... 
+            if (this.incompleteParameterCombos[post.processId]) {
+                const pastParaValues = this.incompleteParameterCombos[post.processId];
+                givenInputValues.push(...pastParaValues);
+                givenInputs = givenInputValues.map(kv => kv.name);
+                missingInputs = listExcept(requiredInputs, givenInputs);
+            }
+        }
+        // 2.2: If that still doesn't work, store incomplete para-combo for later use (in 2.1) and return []
+        if (missingInputs.length > 0) {
+            this.incompleteParameterCombos[post.processId] = givenInputValues;
+            return [];
+        } else {
+            delete(this.incompleteParameterCombos[post.processId]);
+        }
+
+
+        // 3: if the post doesn't contain a config-parameter of this service, run with all possible values of that config-parameter.
         const configurableInputs                    = this.getConfigurableInputNames();
         const unspecifiedConfigs                    = listExcept(configurableInputs, givenInputs);
         const specifiedConfigs                      = listExcept(configurableInputs, unspecifiedConfigs);
         const givenConfigParaValues: KvPair[][]     = specifiedConfigs.map(cName => [getParaFromPost(cName, post)]);
-        const givenNonConfigParaValues: KvPair[][]  = requiredInputs.map(pName => [getParaFromPost(pName, post)]);
+        const givenNonConfigParaValues: KvPair[][]  = givenInputValues.map(kv => [kv]);
         const unspecifiedConfigValues: KvPair[][]   = unspecifiedConfigs.map(pName => this.getAllPossibleValues(pName));
 
         const allParas: KvPair[][] = [...givenNonConfigParaValues, ...givenConfigParaValues, ...unspecifiedConfigValues];

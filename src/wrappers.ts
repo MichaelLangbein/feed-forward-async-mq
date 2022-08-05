@@ -27,7 +27,6 @@ class ProcessMemory {
 
 export class Wrapper {
 
-    protected db = new Database<KvPair[]>();
     protected parameterComboQueue = new Queue<{processId: number, irrelevantParameters: KvPair[], relevantParameters: KvPair[]}>(30);
     protected memory = new ProcessMemory();
 
@@ -40,40 +39,22 @@ export class Wrapper {
         const loop = () => {
             const entry = this.parameterComboQueue.dequeue();
 
+            // if nothing to do, try again in a little while
             if (!entry) {
-                // if nothing to do, try again in a little while
                 setTimeout(loop, 100);
-            } 
+            }
             
             else {
                 const {processId, irrelevantParameters, relevantParameters} = entry;
-
-                // return cached result ...
-                const cacheKey = hash(relevantParameters);
-                const cachedResponse = this.db.get(cacheKey);
-                if (cachedResponse) {
+                this.wps.execute(relevantParameters).then((products) => {
                     const newPost: Post = {
                         processId: processId,
                         lastProcessor: this.name,
-                        data: [...irrelevantParameters, ...cachedResponse]
+                        data: [... irrelevantParameters, ...products]
                     };
                     this.mb.write('posts', newPost);
                     loop();
-                } 
-                
-                // ... or calculate fresh
-                else {
-                    this.wps.execute(relevantParameters).then((products) => {
-                        const newPost: Post = {
-                            processId: processId,
-                            lastProcessor: this.name,
-                            data: [... irrelevantParameters, ...products]
-                        };
-                        this.db.set(cacheKey, products);
-                        this.mb.write('posts', newPost);
-                        loop();
-                    });
-                }
+                });
             }
         };
         

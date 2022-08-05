@@ -44,6 +44,7 @@ export function listIntersection<T>(list1: T[], list2: T[]): T[] {
 
 
 export function permutations<T>(data: T[][]): T[][] {
+    if (data.length === 0) return [];
     if (data.length === 1) return data[0].map(v => [v]);
 
     const perms: T[][] = [];

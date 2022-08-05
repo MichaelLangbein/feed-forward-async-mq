@@ -23,19 +23,19 @@ export class MessageBus {
 
 export type DbPredicate = (key: string, data: any) => boolean;
 
-export class Database {
-    private data: {[key: string]: any} = {};
+export class Database<T> {
+    private data: {[key: string]: T} = {};
 
-    public set(key: string, data: any) {
+    public set(key: string, data: T) {
         this.data[key] = data;
     }
 
-    public get(key: string) {
+    public get(key: string): T {
         return this.data[key];
     }
 
     public getWhere(predicate: DbPredicate) {
-        const matches: {key: string, data: any}[] = [];
+        const matches: {key: string, data: T}[] = [];
         for (const key in this.data) {
             if (predicate(key, this.data[key])) {
                 matches.push({key: key, data: this.data[key]});

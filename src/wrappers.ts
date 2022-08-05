@@ -12,7 +12,7 @@ class ProcessMemory {
     constructor() {}
 
     set(processId: number, i: KvPair): any {
-        if (!this.memory[processId]) this.memory[processId] = new Set<KvPair>();
+        if (!this.memory[processId]) this.memory[processId] = new Set<KvPair>((a,b) => a.name === b.name && a.value === b.value);
         this.memory[processId].add(i);
     }
 

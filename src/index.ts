@@ -6,12 +6,11 @@ import { ModelpropWrapper, ShakygroundWrapper, AssetMasterWrapper, DeusWrapper, 
 
 
 const messageBus = new MessageBus();
-const database = new Database<KvPair[]>();
 
-const modelpropWrapper = new ModelpropWrapper('modelprop', database, messageBus, new Modelprop());
-const shakygroundWrapper = new ShakygroundWrapper('shakyground', database, messageBus, new Shakyground());
-const assetmasterWrapper = new AssetMasterWrapper('assetmaster', database, messageBus, new Assetmaster());
-const deusWrapper = new DeusWrapper('deus', database, messageBus, new Deus());
+const modelpropWrapper = new ModelpropWrapper('modelprop', messageBus, new Modelprop());
+const shakygroundWrapper = new ShakygroundWrapper('shakyground', messageBus, new Shakyground());
+const assetmasterWrapper = new AssetMasterWrapper('assetmaster', messageBus, new Assetmaster());
+const deusWrapper = new DeusWrapper('deus', messageBus, new Deus());
 
 
 const userRequest: Post = {

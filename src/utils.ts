@@ -91,3 +91,31 @@ export class Queue<T> {
         return (n + 1) % this.data.length;
     }
 }
+
+
+
+export type SetEqualityFunction<T> = (a: T, b: T) => boolean;
+export type SetSelectionPredicate<T> = (a: T) => boolean;
+
+export class Set<T> {
+    private data: T[] = [];
+
+    constructor(private equalityFunction: SetEqualityFunction<T> = (a, b) => a === b) {}
+
+    public add(entry: T) {
+        for (const d of this.data) {
+            if (this.equalityFunction(entry, d)) return;
+        }
+        this.data.push(entry);
+    }
+
+    public get(predicate: SetSelectionPredicate<T>): T[] {
+        const out: T[] = [];
+        for (const d of this.data) {
+            if (predicate(d)) {
+                out.push(d);
+            };
+        }
+        return out;
+    }
+}

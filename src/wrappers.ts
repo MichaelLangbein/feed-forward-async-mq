@@ -1,25 +1,25 @@
 import { Wps, Database, MessageBus, KvPair, WpsOptionInput } from './infra';
 import { Post, getProvidedProductNames, getParaFromPost } from './post';
-import { listIntersection, listExcept, permutations, Queue, listFilter } from './utils';
+import { listIntersection, listExcept, permutations, Queue, listFilter, Set } from './utils';
 import hash from 'object-hash';
 
 
 
 
 class WrapperMemory {
-    private memory: {[processId: number]: KvPair[]} = {};
+    private memory: {[processId: number]: Set<KvPair>} = {};
 
     constructor() {}
 
     set(processId: number, i: KvPair): any {
-        if (!this.memory[processId]) this.memory[processId] = [];
-        this.memory[processId].push(i);
+        if (!this.memory[processId]) this.memory[processId] = new Set<KvPair>();
+        this.memory[processId].add(i);
     }
 
     getParameterValues(processId: number, name: string): KvPair[] {
         const cache = this.memory[processId];
         if (!cache) return [];
-        const entries = cache.filter(i => i.name === name);
+        const entries = cache.get((d: KvPair) => d.name === name);
         return entries;
     }
 }
@@ -27,10 +27,11 @@ class WrapperMemory {
 
 export class Wrapper {
 
+    protected db = new Database<KvPair[]>();
     protected parameterComboQueue = new Queue<{processId: number, irrelevantParameters: KvPair[], relevantParameters: KvPair[]}>(30);
     protected memory = new WrapperMemory();
 
-    constructor(protected name: string, protected db: Database<KvPair[]>, protected mb: MessageBus, protected wps: Wps) {
+    constructor(protected name: string, protected mb: MessageBus, protected wps: Wps) {
         this.init();
     }
 
@@ -104,7 +105,7 @@ export class Wrapper {
         const oldOutputs = listIntersection(parameterNames, outputNames);
         if (oldOutputs.length > 0) return [];
 
-        // 2: fill the memory for next time
+        // 2: fill memory for next time
         givenRequiredInputValues.map(i => this.memory.set(processId, i));
 
         // 3: try to fill any non-specified parameters

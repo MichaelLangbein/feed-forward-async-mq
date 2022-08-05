@@ -1,5 +1,5 @@
 import { Wps, Database, MessageBus, KvPair, WpsOptionInput } from './infra';
-import { Post, getProvidedProductNames, getParaFromPost } from './post';
+import { Post } from './post';
 import { listIntersection, listExcept, permutations, Queue, listFilter, Set } from './utils';
 import hash from 'object-hash';
 

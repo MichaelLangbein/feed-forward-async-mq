@@ -7,17 +7,30 @@ import hash from 'object-hash';
 
 
 class WrapperMemory {
-    constructor(wps: Wps) {}
+    private memory: {[processId: number]: KvPair[]} = {};
+
+    constructor() {}
+
+    set(processId: number, i: KvPair): any {
+        if (!this.memory[processId]) this.memory[processId] = [];
+        this.memory[processId].push(i);
+    }
+
+    getParameterValues(processId: number, name: string): KvPair[] {
+        const cache = this.memory[processId];
+        if (!cache) return [];
+        const entries = cache.filter(i => i.name === name);
+        return entries;
+    }
 }
 
 
 export class Wrapper {
 
     protected parameterComboQueue = new Queue<{processId: number, irrelevantParameters: KvPair[], relevantParameters: KvPair[]}>(30);
-    protected memory: WrapperMemory;
+    protected memory = new WrapperMemory();
 
     constructor(protected name: string, protected db: Database<KvPair[]>, protected mb: MessageBus, protected wps: Wps) {
-        this.memory = new WrapperMemory(this.wps);
         this.init();
     }
 
@@ -64,7 +77,7 @@ export class Wrapper {
             const parameters = post.data;
             const irrelevantParameters = this.getIrrelevantParameters(parameters);
             const relevantParameters = this.getRelevantParameters(parameters);
-            const parameterCombinations = this.validParameterCombinations(relevantParameters);
+            const parameterCombinations = this.validParameterCombinations(post.processId, relevantParameters);
             for (const parameterCombination of parameterCombinations) {
                 this.parameterComboQueue.enqueue({ processId: post.processId, irrelevantParameters, relevantParameters: parameterCombination });
             }
@@ -75,7 +88,7 @@ export class Wrapper {
     }
 
 
-    protected validParameterCombinations(parameters: KvPair[]): KvPair[][] {
+    protected validParameterCombinations(processId: number, parameters: KvPair[]): KvPair[][] {
         const parameterNames = parameters.map(p => p.name);
         const outputNames = this.getOutputNames();
         const requiredInputNames = this.getRequiredInputNames();
@@ -91,28 +104,22 @@ export class Wrapper {
         const oldOutputs = listIntersection(parameterNames, outputNames);
         if (oldOutputs.length > 0) return [];
 
-        // 2: if the post already contains a complete set of inputs, return that
-        if (missingRequiredInputNames.length === 0) {
-            if (missingOptionalInputNames.length === 0) {
-                return [parameters];
-            } else {
-                // 2.1: if optional paras are missing, return all possible values for them
-                const optionalParameterValues: KvPair[][] = missingOptionalInputNames.map(name => this.getOptionalParameterValues(name));
-                const optionalParameterPermutations = permutations(optionalParameterValues);
-                const validConfigs: KvPair[][] = [];
-                for (const optionalParameterPermutation of optionalParameterPermutations) {
-                    validConfigs.push([... givenRequiredInputValues, ...givenOptionalInputValues, ... optionalParameterPermutation]);
-                }
-                return validConfigs;
-            }
-        }
+        // 2: fill the memory for next time
+        givenRequiredInputValues.map(i => this.memory.set(processId, i));
 
-        // 3: if the post is missing a required input, see if you can fill it up from memory
-        if (missingRequiredInputNames.length > 0) {
-            // 3.1: if so, return and remove memory
-            
-            // 3.2: if not, add given data to memory
+        // 3: try to fill any non-specified parameters
+        const missingOptionalParameterValues = missingOptionalInputNames.map(name => this.getOptionalParameterValues(name));
+        const missingRequiredParameterValues = missingRequiredInputNames.map(name => this.memory.getParameterValues(processId, name));
+        if (missingRequiredParameterValues.find(v => v.length === 0)) return [];
+        const missingParameterValues = [... missingOptionalParameterValues, ... missingRequiredParameterValues];
+        const missingParameterPermutations = permutations(missingParameterValues);
+        const validConfigs: KvPair[][] = [];
+        for (const missingParameterPermutation of missingParameterPermutations) {
+            const configuration = [... givenRequiredInputValues, ...givenOptionalInputValues, ... missingParameterPermutation];
+            validConfigs.push(configuration);
         }
+        return validConfigs;
+
     }
 
 

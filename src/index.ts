@@ -25,8 +25,8 @@ const userRequest: Post = {
 
 // @TODO: if the user requests contains options, split them into single-value-posts
 messageBus.write("posts", userRequest);
-messageBus.subscribe("posts", async (post) => {
-  console.log(post.data.deus?.eqDamage);
+messageBus.subscribe("posts", async (post: Post) => {
+  console.log(post.data.find(d => d.name === 'eqDamage'));
 })
 
 

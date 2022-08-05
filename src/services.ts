@@ -11,7 +11,7 @@ export class Deus implements Wps {
     }, {
         name: 'exposure'
     }];
-    outputNames: ['eqDamage'];
+    outputNames = ['eqDamage'];
 
     async execute(args: KvPair[]): Promise<KvPair[]> {
         await sleep(Math.random() * 1000);

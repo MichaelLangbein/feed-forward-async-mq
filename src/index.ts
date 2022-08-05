@@ -15,7 +15,6 @@ const deusWrapper = new Wrapper('deus', messageBus, new Deus());
 
 const userRequest: Post = {
   processId: 42,
-  lastProcessor: 'user',
   data: [
     {name: 'mgpe', value: 'gmpe1'},
     {name: 'eqParas', value: 'magnitude8.5'}
@@ -26,7 +25,7 @@ const userRequest: Post = {
 // @TODO: if the user requests contains options, split them into single-value-posts
 messageBus.write("posts", userRequest);
 messageBus.subscribe("posts", async (post: Post) => {
-  console.log(post.data.find(d => d.name === 'eqDamage'));
+  // console.log(post.data.find(d => d.name === 'eqDamage'));
 })
 
 

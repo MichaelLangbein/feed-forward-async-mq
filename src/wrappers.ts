@@ -42,7 +42,7 @@ class ParaComboMemory {
 
 export class Wrapper {
 
-    protected parameterComboQueue = new Queue<{processId: number, irrelevantParameters: KvPair[], relevantParameters: KvPair[]}>(30);
+    protected parameterComboQueue = new Queue<{processId: number, relevantParameters: KvPair[]}>(30);
     protected inputMemory = new InputMemory();
     protected parameterMemory = new ParaComboMemory();
 
@@ -55,11 +55,10 @@ export class Wrapper {
                 setTimeout(loop, 100);
             }
             else {
-                const {processId, irrelevantParameters, relevantParameters} = entry;
+                const {processId, relevantParameters} = entry;
                 this.wps.execute(relevantParameters).then((products) => {
                     const newPost: Post = {
                         processId: processId,
-                        lastProcessor: this.name,
                         data: [ ...products]
                     };
                     console.log(`${this.name} used ${relevantParameters.map(p => p.name + '/' + p.value).join(', ')} to calculate ${products.map(p => p.name + '/' + p.value).join(', ')}`)
@@ -71,15 +70,13 @@ export class Wrapper {
         
         
         this.mb.subscribe('posts', async (post: Post) => {
-            if (post.lastProcessor === this.name) return;
             const parameters = post.data;
-            const irrelevantParameters = this.getIrrelevantParameters(parameters);
             const relevantParameters = this.getRelevantParameters(parameters);
             const parameterCombinations = this.validParameterCombinations(post.processId, relevantParameters);
             for (const parameterCombination of parameterCombinations) {
                 const isNewCombination = this.parameterMemory.set(post.processId, parameterCombination)
                 if (isNewCombination) {
-                    this.parameterComboQueue.enqueue({ processId: post.processId, irrelevantParameters, relevantParameters: parameterCombination });
+                    this.parameterComboQueue.enqueue({ processId: post.processId, relevantParameters: parameterCombination });
                 }
             }
         });
@@ -134,12 +131,6 @@ export class Wrapper {
         const relevantParaNames = this.getParaNames();
         const relevantParas = paras.filter(p => relevantParaNames.includes(p.name));
         return relevantParas;
-    }
-
-    private getIrrelevantParameters(paras: KvPair[]): KvPair[] {
-        const relevantParaNames = this.getParaNames();
-        const irrelevantParas = paras.filter(p => !(relevantParaNames.includes(p.name)));
-        return irrelevantParas;
     }
 
     private getParaNames(): string[] {

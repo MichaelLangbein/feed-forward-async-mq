@@ -6,7 +6,7 @@ import hash from 'object-hash';
 
 
 
-class WrapperMemory {
+class ProcessMemory {
     private memory: {[processId: number]: Set<KvPair>} = {};
 
     constructor() {}
@@ -29,7 +29,7 @@ export class Wrapper {
 
     protected db = new Database<KvPair[]>();
     protected parameterComboQueue = new Queue<{processId: number, irrelevantParameters: KvPair[], relevantParameters: KvPair[]}>(30);
-    protected memory = new WrapperMemory();
+    protected memory = new ProcessMemory();
 
     constructor(protected name: string, protected mb: MessageBus, protected wps: Wps) {
         this.init();
@@ -39,42 +39,47 @@ export class Wrapper {
 
         const loop = () => {
             const entry = this.parameterComboQueue.dequeue();
-            if (entry) {
+
+            if (!entry) {
+                // if nothing to do, try again in a little while
+                setTimeout(loop, 100);
+            } 
+            
+            else {
                 const {processId, irrelevantParameters, relevantParameters} = entry;
 
-                // querying cache
+                // return cached result ...
                 const cacheKey = hash(relevantParameters);
                 const cachedResponse = this.db.get(cacheKey);
                 if (cachedResponse) {
                     const newPost: Post = {
                         processId: processId,
+                        lastProcessor: this.name,
                         data: [...irrelevantParameters, ...cachedResponse]
                     };
                     this.mb.write('posts', newPost);
-                } else {
-                    // running wps
+                    loop();
+                } 
+                
+                // ... or calculate fresh
+                else {
                     this.wps.execute(relevantParameters).then((products) => {
                         const newPost: Post = {
                             processId: processId,
+                            lastProcessor: this.name,
                             data: [... irrelevantParameters, ...products]
                         };
-                        // writing to queue
-                        this.mb.write('posts', newPost);
-
-                        // setting cache
                         this.db.set(cacheKey, products);
-
-                        // repeat
+                        this.mb.write('posts', newPost);
                         loop();
                     });
                 }
-            } else {
-                setTimeout(loop, 100);
             }
         };
         
         
         this.mb.subscribe('posts', async (post: Post) => {
+            if (post.lastProcessor === this.name) return;
             const parameters = post.data;
             const irrelevantParameters = this.getIrrelevantParameters(parameters);
             const relevantParameters = this.getRelevantParameters(parameters);

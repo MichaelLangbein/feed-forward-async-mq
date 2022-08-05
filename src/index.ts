@@ -15,6 +15,7 @@ const deusWrapper = new DeusWrapper('deus', messageBus, new Deus());
 
 const userRequest: Post = {
   processId: 42,
+  lastProcessor: 'user',
   data: [
     {name: 'mgpe', value: 'gmpe1'},
     {name: 'eqParas', value: 'magnitude8.5'}

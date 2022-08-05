@@ -2,15 +2,15 @@ import { MessageBus, Database, KvPair } from './infra';
 import { Post } from './post';
 import { Modelprop, Shakyground, Assetmaster, Deus, Ab, OneTwo } from './services';
 import { sleep } from './utils';
-import { ModelpropWrapper, ShakygroundWrapper, AssetMasterWrapper, DeusWrapper, Wrapper } from './wrappers';
+import { Wrapper } from './wrappers';
 
 
 const messageBus = new MessageBus();
 
-const modelpropWrapper = new ModelpropWrapper('modelprop', messageBus, new Modelprop());
-const shakygroundWrapper = new ShakygroundWrapper('shakyground', messageBus, new Shakyground());
-const assetmasterWrapper = new AssetMasterWrapper('assetmaster', messageBus, new Assetmaster());
-const deusWrapper = new DeusWrapper('deus', messageBus, new Deus());
+const modelpropWrapper = new Wrapper('modelprop', messageBus, new Modelprop());
+const shakygroundWrapper = new Wrapper('shakyground', messageBus, new Shakyground());
+const assetmasterWrapper = new Wrapper('assetmaster', messageBus, new Assetmaster());
+const deusWrapper = new Wrapper('deus', messageBus, new Deus());
 
 
 const userRequest: Post = {

@@ -31,19 +31,13 @@ export class Wrapper {
     protected memory = new ProcessMemory();
 
     constructor(protected name: string, protected mb: MessageBus, protected wps: Wps) {
-        this.init();
-    }
-
-    protected init() {
 
         const loop = () => {
             const entry = this.parameterComboQueue.dequeue();
-
             // if nothing to do, try again in a little while
             if (!entry) {
                 setTimeout(loop, 100);
             }
-            
             else {
                 const {processId, irrelevantParameters, relevantParameters} = entry;
                 this.wps.execute(relevantParameters).then((products) => {
@@ -151,16 +145,4 @@ export class Wrapper {
     }
 
 }
-
-
-export class ModelpropWrapper extends Wrapper { }
-
-export class ShakygroundWrapper extends Wrapper { }
-
-export class AssetMasterWrapper extends Wrapper { }
-
-export class DeusWrapper extends Wrapper { }
-
-
-
 

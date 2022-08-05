@@ -103,11 +103,12 @@ export class Set<T> {
 
     constructor(private equalityFunction: SetEqualityFunction<T> = (a, b) => a === b) {}
 
-    public add(entry: T) {
+    public add(entry: T): boolean {
         for (const d of this.data) {
-            if (this.equalityFunction(entry, d)) return;
+            if (this.equalityFunction(entry, d)) return false;
         }
         this.data.push(entry);
+        return true;
     }
 
     public get(predicate: SetSelectionPredicate<T>): T[] {

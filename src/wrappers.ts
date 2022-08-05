@@ -2,16 +2,17 @@ import { Wps, Database, MessageBus, KvPair, WpsOptionInput } from './infra';
 import { Post } from './post';
 import { listIntersection, listExcept, permutations, Queue, listFilter, Set } from './utils';
 import hash from 'object-hash';
+import objectHash from 'object-hash';
 
 
 
 
-class ProcessMemory {
+class InputMemory {
     private memory: {[processId: number]: Set<KvPair>} = {};
 
     constructor() {}
 
-    set(processId: number, i: KvPair): any {
+    set(processId: number, i: KvPair) {
         if (!this.memory[processId]) this.memory[processId] = new Set<KvPair>((a,b) => a.name === b.name && a.value === b.value);
         this.memory[processId].add(i);
     }
@@ -24,11 +25,26 @@ class ProcessMemory {
     }
 }
 
+class ParaComboMemory {
+    private memory: {[processId: number]: Set<string>} = {};
+
+    constructor() {}
+
+    set(processId: number, paras: KvPair[]): boolean {
+        paras.sort((a, b) => a.name < b.name ? -1 : 1);
+        const hash = objectHash(paras);
+        if (!this.memory[processId]) this.memory[processId] = new Set<string>();
+        return this.memory[processId].add(hash);
+    }
+
+}
+
 
 export class Wrapper {
 
     protected parameterComboQueue = new Queue<{processId: number, irrelevantParameters: KvPair[], relevantParameters: KvPair[]}>(30);
-    protected memory = new ProcessMemory();
+    protected inputMemory = new InputMemory();
+    protected parameterMemory = new ParaComboMemory();
 
     constructor(protected name: string, protected mb: MessageBus, protected wps: Wps) {
 
@@ -44,8 +60,9 @@ export class Wrapper {
                     const newPost: Post = {
                         processId: processId,
                         lastProcessor: this.name,
-                        data: [... irrelevantParameters, ...products]
+                        data: [ ...products]
                     };
+                    console.log(`${this.name} used ${relevantParameters.map(p => p.name + '/' + p.value).join(', ')} to calculate ${products.map(p => p.name + '/' + p.value).join(', ')}`)
                     this.mb.write('posts', newPost);
                     loop();
                 });
@@ -60,7 +77,10 @@ export class Wrapper {
             const relevantParameters = this.getRelevantParameters(parameters);
             const parameterCombinations = this.validParameterCombinations(post.processId, relevantParameters);
             for (const parameterCombination of parameterCombinations) {
-                this.parameterComboQueue.enqueue({ processId: post.processId, irrelevantParameters, relevantParameters: parameterCombination });
+                const isNewCombination = this.parameterMemory.set(post.processId, parameterCombination)
+                if (isNewCombination) {
+                    this.parameterComboQueue.enqueue({ processId: post.processId, irrelevantParameters, relevantParameters: parameterCombination });
+                }
             }
         });
 
@@ -86,11 +106,11 @@ export class Wrapper {
         if (oldOutputs.length > 0) return [];
 
         // 2: fill memory for next time
-        givenRequiredInputValues.map(i => this.memory.set(processId, i));
+        givenRequiredInputValues.map(i => this.inputMemory.set(processId, i));
 
         // 3: try to fill any non-specified parameters
         const missingOptionalParameterValues = missingOptionalInputNames.map(name => this.getOptionalParameterValues(name));
-        const missingRequiredParameterValues = missingRequiredInputNames.map(name => this.memory.getParameterValues(processId, name));
+        const missingRequiredParameterValues = missingRequiredInputNames.map(name => this.inputMemory.getParameterValues(processId, name));
         if (missingRequiredParameterValues.find(v => v.length === 0)) return [];
         const missingParameterValues = [... missingOptionalParameterValues, ... missingRequiredParameterValues];
         const missingParameterPermutations = permutations(missingParameterValues);

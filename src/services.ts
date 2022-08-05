@@ -11,6 +11,7 @@ export class Deus implements Wps {
     }, {
         name: 'exposure'
     }];
+    outputNames: ['eqDamage'];
 
     async execute(args: KvPair[]): Promise<KvPair[]> {
         await sleep(Math.random() * 1000);
@@ -31,6 +32,7 @@ export class Assetmaster implements Wps {
         name: 'model',
         options: ["Peru-CVT1", "Peru-CVT2", "Peru-CVT3"]
     }];
+    outputNames = ['exposure'];
 
     async execute(args: KvPair[]): Promise<KvPair[]> {
         await sleep(Math.random() * 1000);
@@ -56,6 +58,7 @@ export class Modelprop implements Wps {
         name: 'schema',
         options: ['SARA_v1.0', 'Suppasri']
     }];
+    outputNames = ['vulnerability'];
 
     async execute(args: KvPair[]): Promise<KvPair[]> {
         await sleep(Math.random() * 1000);
@@ -80,6 +83,7 @@ export class Shakyground implements Wps {
         name: 'gmpe',
         options: ['gmpe1', 'gmpe2']
     }];
+    outputNames = ['shakemap'];
     
     async execute(args: KvPair[]): Promise<KvPair[]> {
         await sleep(Math.random() * 1000);
@@ -99,6 +103,7 @@ export class Ab implements Wps {
         name: 'Letter',
         options: ['A', 'B']
     }];
+    outputNames = ['LetterOutput'];
 
     async execute(args: KvPair[]): Promise<KvPair[]> {
         sleep(Math.random() * 1000);
@@ -116,6 +121,7 @@ export class OneTwo implements Wps {
         name: 'Number',
         options: ['1', '2']
     }];
+    outputNames = ['NumberOutput'];
 
     async execute(args: KvPair[]): Promise<KvPair[]> {
         sleep(Math.random() * 1000);

@@ -68,11 +68,13 @@ export type WpsInput = WpsOptionInput | WpsValueInput;
 
 export interface Wps {
     inputs: WpsInput[];
+    outputNames: string[];
     execute(args: KvPair[]): Promise<KvPair[]>;
 }
 
 export class DummyWps implements Wps {
     inputs = [];
+    outputNames = ['dummyResponse'];
 
     async execute(args: KvPair[]): Promise<KvPair[]> {
         await sleep(1000);

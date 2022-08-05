@@ -15,6 +15,34 @@ export function listExcept<T>(list: T[], except: T[]): T[] {
 }
 
 
+export function listFilter<T>(list: T[], includes: T[]): T[] {
+    const out: T[] = [];
+    for (const entry of list) {
+        for (const i of includes) {
+            if (entry === i) {
+                out.push(entry);
+                break;
+            }
+        }
+    }
+    return out;
+}
+
+
+export function listIntersection<T>(list1: T[], list2: T[]): T[] {
+    const ints: T[] = [];
+    for (const i1 of list1) {
+        for (const i2 of list2) {
+            if (i1 === i2) {
+                ints.push(i1);
+                break;
+            }
+        }
+    }
+    return ints;
+}
+
+
 export function permutations<T>(data: T[][]): T[][] {
     if (data.length === 1) return data[0].map(v => [v]);
 

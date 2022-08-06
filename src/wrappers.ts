@@ -63,7 +63,7 @@ export class Wrapper {
                         data: [...irrelevantParameters, ...relevantParameters, ...products]
                         // data: [...products]
                     };
-                    console.log(`${this.name} used ${relevantParameters.map(p => p.name + '/' + p.value).join(', ')} to calculate ${products.map(p => p.name + '/' + p.value).join(', ')}`)
+                    // console.log(`${this.name} used ${relevantParameters.map(p => p.name + '/' + p.value).join(', ')} to calculate ${products.map(p => p.name + '/' + p.value).join(', ')}`)
                     this.mb.write('posts', newPost);
                     loop();
                 });
